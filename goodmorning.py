@@ -1,22 +1,9 @@
 import torch
 from datetime import datetime
 
-class StartNet(torch.nn.Module):
+class MorningNet(torch.nn.Module):
     def __init__(self, n_hidden_neurons):
-        super(StartNet, self).__init__()
-        self.fc1 = torch.nn.Linear(1, n_hidden_neurons)
-        self.act1 = torch.nn.Sigmoid()
-        self.fc2 = torch.nn.Linear(n_hidden_neurons, 1)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.act1(x)
-        x = self.fc2(x)
-        return x
-
-class EndNet(torch.nn.Module):
-    def __init__(self, n_hidden_neurons):
-        super(EndNet, self).__init__()
+        super(MorningNet, self).__init__()
         self.fc1 = torch.nn.Linear(1, n_hidden_neurons)
         self.act1 = torch.nn.Sigmoid()
         self.fc2 = torch.nn.Linear(n_hidden_neurons, 1)
@@ -30,8 +17,8 @@ class EndNet(torch.nn.Module):
 
 class BlackBox():
     def __init__(self):
-        self.startNet = StartNet(50)
-        self.endNet = EndNet(50)
+        self.startNet = MorningNet(50)
+        self.endNet = MorningNet(50)
         self.x_train = list()
         self.radiuses = list()
         self.y_start_train = None
@@ -137,8 +124,10 @@ class BlackBox():
             self.optimizerEnd.step()
 
     def getStart(self, x):
+        x = torch.tensor([x])
         return self.startNet.forward(x)
 
     def getEnd(self, x):
+        x = torch.tensor([x])
         return self.endNet.forward(x)
 
