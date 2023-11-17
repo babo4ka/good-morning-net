@@ -17,18 +17,17 @@ class MorningNet(torch.nn.Module):
 
 class BlackBox():
     def __init__(self):
-        self.startNet = MorningNet(50)
-        self.endNet = MorningNet(50)
-        self.x_train = list()
-        self.radiuses = list()
-        self.y_start_train = None
-        self.y_end_train = None
+        self.avgNet = MorningNet(50)
+        self.radiusNet = MorningNet(50)
+        self.hours_train = list()
+        self.avg_train = list()
+        self.radius_train = list()
         self.input_strings = list()
         self.file = open('./resources/dates.txt', 'r')
         self.full_date_format = '%d-%m-%Y %H:%M:%S'
         self.date_format = '%d-%m-%Y'
-        self.optimizerStart = torch.optim.Adam(self.startNet.parameters(), lr=0.01)
-        self.optimizerEnd = torch.optim.Adam(self.endNet.parameters(), lr=0.01)
+        self.optimizerAvg = torch.optim.Adam(self.avgNet.parameters(), lr=0.01)
+        self.optimizerRadius = torch.optim.Adam(self.radiusNet.parameters(), lr=0.01)
 
     def get_rad(self, x):
         sumS = 0
@@ -67,36 +66,33 @@ class BlackBox():
                     datetime.strftime(time_obj, self.full_date_format))
 
         for key in x_data.keys():
-            sumT = 0
-            sumS = 0
             hoursArr = list()
             for i in range(len(x_data[key])):
                 time_obj = datetime.strptime(x_data[key][i], self.full_date_format)
                 hours = int(time_obj.strftime('%H')) + int(time_obj.strftime('%M')) / 60
-                sumT += hours
                 hoursArr.append(hours)
+                self.hours_train.append(hours)
 
-                if i < len(x_data[key]) - 1:
-                    nextTimeObj = datetime.strptime(x_data[key][i + 1], self.full_date_format)
-                    nextHours = int(nextTimeObj.strftime('%H')) + int(nextTimeObj.strftime('%M')) / 60
-                    sumS += nextHours - hours
-            self.x_train.append(self.get_avg(hoursArr))
-            self.radiuses.append(self.get_rad(hoursArr))
-        self.x_train = torch.tensor(self.x_train)
-        self.radiuses = torch.tensor(self.radiuses)
+            avg = self.get_avg(hoursArr)
+            rad = self.get_rad(hoursArr)
+            for i in range(len(x_data[key])):
+                self.avg_train.append(avg)
+                self.radius_train.append(rad)
 
-        self.y_start_train = self.x_train - self.radiuses
-        self.y_end_train = self.x_train + self.radiuses
+        self.hours_train = torch.tensor(self.hours_train)
 
-        noise_start = torch.randn(self.y_start_train.size()) / 5
-        noise_end = torch.randn(self.y_end_train.size()) / 5
+        self.avg_train = torch.tensor(self.avg_train)
+        self.radius_train = torch.tensor(self.radius_train)
 
-        self.y_start_train = self.y_start_train + noise_start
-        self.y_end_train = self.y_end_train + noise_end
+        noise_avg = torch.randn(self.avg_train.size()) / 5
+        noise_radius = torch.randn(self.radius_train.size()) / 5
 
-        self.x_train.unsqueeze_(1)
-        self.y_start_train.unsqueeze_(1)
-        self.y_end_train.unsqueeze_(1)
+        self.avg_train = self.avg_train + noise_avg
+        self.radius_train = self.radius_train + noise_radius
+
+        self.hours_train.unsqueeze_(1)
+        self.avg_train.unsqueeze_(1)
+        self.radius_train.unsqueeze_(1)
 
     def loss(self, pred, target):
         squares = (pred - target) ** 2
@@ -104,30 +100,34 @@ class BlackBox():
 
     def learnBox(self):
         for epoch_index in range(2000):
-            self.optimizerStart.zero_grad()
+            self.optimizerAvg.zero_grad()
 
-            y_pred = self.startNet.forward(self.x_train)
-            loss_val = self.loss(y_pred, self.y_start_train)
+            y_pred = self.avgNet.forward(self.hours_train)
+            loss_val = self.loss(y_pred, self.avg_train)
 
             loss_val.backward()
 
-            self.optimizerStart.step()
+            self.optimizerAvg.step()
 
         for epoch_index in range(2000):
-            self.optimizerEnd.zero_grad()
+            self.optimizerRadius.zero_grad()
 
-            y_pred = self.endNet.forward(self.x_train)
-            loss_val = self.loss(y_pred, self.y_end_train)
+            y_pred = self.radiusNet.forward(self.hours_train)
+            loss_val = self.loss(y_pred, self.radius_train)
 
             loss_val.backward()
 
-            self.optimizerEnd.step()
+            self.optimizerRadius.step()
 
-    def getStart(self, x):
+    def getAvg(self, x):
         x = torch.tensor([x])
-        return self.startNet.forward(x)
+        return round(self.avgNet.forward(x).item(), 2)
 
-    def getEnd(self, x):
+    def getRad(self, x):
         x = torch.tensor([x])
-        return self.endNet.forward(x)
+        return round(self.radiusNet.forward(x).item(), 2)
 
+    def getInterval(self, x):
+        avg = self.getAvg(x)
+        rad = self.getRad(x)
+        return avg-rad, avg+rad
