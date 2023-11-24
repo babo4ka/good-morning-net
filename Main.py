@@ -4,12 +4,13 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 
 from Dataset import MyDataset
 
-dataset = MyDataset(file="./resources/annots.csv", root_dir='./resources/imgs', transform=transforms.ToTensor())
+dataset = MyDataset(file="./resources/annotations.csv", root_dir='./resources/imgs', transform=transforms.ToTensor())
 
-train_set, test_set = torch.utils.data.random_split(dataset, [3, 2])
+train_set, test_set = torch.utils.data.random_split(dataset, [1000, 266])
 train_loader = DataLoader(dataset=train_set, batch_size=10, shuffle=True)
 test_loader = DataLoader(dataset=test_set, batch_size=10, shuffle=True)
 
@@ -31,21 +32,24 @@ for t in test_set:
 x_test = torch.stack(x)
 y_test = torch.tensor(y)
 
-x_train.reshape([-1, 28, 28])
-x_test.reshape([-1, 28, 28])
+
+x_train = x_train.reshape([-1, 28 * 28])
+x_test = x_test.reshape([-1, 28 * 28])
+
 
 class GoodMorningNet(nn.Module):
     def __init__(self, hidden_neurons):
         super(GoodMorningNet, self).__init__()
         self.fc1 = nn.Linear(28 * 28, hidden_neurons)
         self.activ1 = nn.Sigmoid()
-        self.fc2 = nn.Linear(hidden_neurons, 3)
+        self.fc2 = nn.Linear(hidden_neurons, 2)
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.activ1(x)
         x = self.fc2(x)
         return x
+
 
 net = GoodMorningNet(50)
 
@@ -67,7 +71,7 @@ for epoch in range(5000):
     for start_index in range(0, len(x_train), batch_size):
         optimizer.zero_grad()
 
-        batch_indexes = order[start_index: start_index+batch_size]
+        batch_indexes = order[start_index: start_index + batch_size]
 
         x_batch = x_train[batch_indexes].to(device)
         y_batch = y_train[batch_indexes].to(device)
@@ -78,3 +82,8 @@ for epoch in range(5000):
         loss_value.backward()
 
         optimizer.step()
+
+    test_preds = net.forward(x_test)
+
+    accuracy = (test_preds.argmax(dim=1) == y_test).float().mean()
+    print(accuracy)

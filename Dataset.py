@@ -8,7 +8,7 @@ from PIL import Image
 
 class MyDataset(Dataset):
     def __init__(self, file, root_dir, transform=None):
-        self.annotations = pd.read_csv(file, sep=";", header=None)
+        self.annotations = pd.read_csv(file, sep=",")
         self.root_dir = root_dir
         self.transform = transform
 
@@ -17,11 +17,12 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         path = os.path.join(self.root_dir, self.annotations.iloc[index, 0])
-        image = Image.open(path)
+        image = Image.open(path).convert('RGB')
         image = image.resize((28, 28))
         y_label = torch.tensor(int(self.annotations.iloc[index, 1]))
+        name = self.annotations.iloc[index, 0]
 
         if self.transform:
             image = self.transform(image)
 
-        return image, y_label
+        return image, y_label, name
