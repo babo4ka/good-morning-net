@@ -33,9 +33,9 @@ x_test = torch.stack(x)
 y_test = torch.tensor(y)
 
 
-x_train = x_train.reshape([-1, 28 * 28])
-x_test = x_test.reshape([-1, 28 * 28])
-
+x_train = x_train.reshape([-1, 3, 28 * 28])
+x_test = x_test.reshape([-1, 3, 28 * 28])
+print(x_train.shape)
 
 class GoodMorningNet(nn.Module):
     def __init__(self, hidden_neurons):
@@ -65,6 +65,9 @@ batch_size = 100
 x_test.to(device)
 y_test.to(device)
 
+x_train.to(device)
+y_train.to(device)
+
 for epoch in range(5000):
     order = np.random.permutation(len(x_train))
 
@@ -75,8 +78,11 @@ for epoch in range(5000):
 
         x_batch = x_train[batch_indexes].to(device)
         y_batch = y_train[batch_indexes].to(device)
+        print(y_batch.shape)
 
         preds = net.forward(x_batch)
+
+        print(preds.shape)
 
         loss_value = loss(preds, y_batch)
         loss_value.backward()
