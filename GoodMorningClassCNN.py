@@ -25,7 +25,7 @@ class GMImagesNet(nn.Module):
         self.fc2 = nn.Linear(120, 84)
         self.act4 = nn.Tanh()
 
-        self.fc3 = nn.Linear(84, 2)
+        self.fc3 = nn.Linear(84, 3)
 
 
     def forward(self, x):
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     loss = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=1.0e-3)
 
-    batch_size = 100
+    batch_size = 50
 
     x_test = x_test.to(device)
     y_test = y_test.to(device)
