@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image_path = "../resources/morning-coffee-0000.jpg"
+image_path = "../resources/img_resources/morning-coffee-0000.jpg"
 image = cv2.imread(image_path)
 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 lower = np.array([0, 0, 218])

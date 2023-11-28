@@ -18,14 +18,6 @@ for filename in os.listdir(pathdu):
     duList.append(filename)
     duids.append(0)
 
-# otherList = list()
-# otherIds = list()
-# otherpath = "../resources/wallpapers"
-#
-# for filename in os.listdir(otherpath):
-#     otherList.append(filename)
-#     otherIds.append(2)
-
 
 df = pd.DataFrame({'name': gmList + duList, 'class': gmids+duids})
 df = df.sample(frac=1)
