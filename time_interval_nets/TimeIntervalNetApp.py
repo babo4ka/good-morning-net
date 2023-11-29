@@ -69,7 +69,7 @@ def predict():
     return round((avg * max_avg - rad * max_rad), 2), round((avg * max_avg + rad * max_rad), 2)
 
 
-HOST = ('localhost', 9999)
+HOST = ('192.168.0.103', 9999)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
