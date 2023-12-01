@@ -13,7 +13,7 @@ import json
 
 avg_net = torch.load('../resources/time_interval_nets/avg_net.pt')
 avg_net.eval()
-rad_net = torch.load('../resources/time_interval_nets/rad_net.pt')
+rad_net = torch.load('../resources/time_interval_nets/rad_net_alt.pt')
 rad_net.eval()
 
 x_data = dates_to_dict()

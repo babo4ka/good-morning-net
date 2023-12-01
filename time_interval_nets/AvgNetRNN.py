@@ -46,7 +46,7 @@ train_window = 7
 avg_train_io_seq = create_inout_sequences(avg_train, train_window)
 
 
-avg_net = GoodMoTimeNet()
+avg_net = GoodMoTimeNet(hidden_layer_size=250)
 loss_fc = nn.MSELoss()
 optimizer = optim.Adam(avg_net.parameters(), lr=1.0e-3)
 
