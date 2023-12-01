@@ -1,14 +1,16 @@
-import torch
 from datetime import datetime
+
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-from TimeUntervalNetUtils import get_avg
+
+from TimeUntervalNetUtils import GoodMoTimeNet
+from TimeUntervalNetUtils import create_inout_sequences
 from TimeUntervalNetUtils import dates_to_dict
 from TimeUntervalNetUtils import full_date_format
-from TimeUntervalNetUtils import create_inout_sequences
-from TimeUntervalNetUtils import GoodMoTimeNet
+from TimeUntervalNetUtils import get_avg
 
 x_data = dates_to_dict()
 avg_list = []
@@ -48,7 +50,7 @@ avg_net = GoodMoTimeNet()
 loss_fc = nn.MSELoss()
 optimizer = optim.Adam(avg_net.parameters(), lr=1.0e-3)
 
-for i in range(2000):
+for i in range(1700):
     for seq, labels in avg_train_io_seq:
         optimizer.zero_grad()
         avg_net.hidden_cell = (torch.zeros(1, 1, avg_net.hidden_layer_size),
@@ -65,7 +67,7 @@ for i in range(2000):
 
         print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
 
-# torch.save(avg_net, '../resources/time_interval_nets/avg_net.pt')
+torch.save(avg_net, '../resources/time_interval_nets/avg_net.pt')
 fut_pred = 7
 
 test_inputs = avg_train[-train_window:].tolist()

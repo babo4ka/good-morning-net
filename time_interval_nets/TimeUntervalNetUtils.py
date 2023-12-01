@@ -61,6 +61,8 @@ class GoodMoTimeNet(nn.Module):
         self.hidden_layer_size = hidden_layer_size
         self.lstm = nn.LSTM(input_size, hidden_layer_size)
         self.linear = nn.Linear(hidden_layer_size, output_size)
+        # self.lstm2 = nn.LSTM(hidden_layer_size, hidden_layer_size)
+        # self.linear2 = nn.Linear(hidden_layer_size, output_size)
         self.hidden_cell = (torch.zeros(1, 1, self.hidden_layer_size),
                             torch.zeros(1, 1, self.hidden_layer_size))
 
@@ -68,4 +70,8 @@ class GoodMoTimeNet(nn.Module):
         lstm_out, self.hidden_cell = self.lstm(input_seq.view(len(input_seq), 1, -1), self.hidden_cell)
 
         predictions = self.linear(lstm_out.view(len(input_seq), -1))
+
+        # lstm_out, self.hidden_cell = self.lstm2(predictions.view(len(predictions), 1, -1), self.hidden_cell)
+        # predictions = self.linear2(lstm_out.view(len(predictions), -1))
+
         return predictions[-1]

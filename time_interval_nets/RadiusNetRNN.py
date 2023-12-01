@@ -1,14 +1,16 @@
-import torch
 from datetime import datetime
+
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-from TimeUntervalNetUtils import get_rad
+
+from TimeUntervalNetUtils import GoodMoTimeNet
+from TimeUntervalNetUtils import create_inout_sequences
 from TimeUntervalNetUtils import dates_to_dict
 from TimeUntervalNetUtils import full_date_format
-from TimeUntervalNetUtils import create_inout_sequences
-from TimeUntervalNetUtils import GoodMoTimeNet
+from TimeUntervalNetUtils import get_rad
 
 x_data = dates_to_dict()
 radius_list = []
@@ -41,11 +43,11 @@ train_window = 7
 
 radius_train_io_seq = create_inout_sequences(radius_train, train_window)
 
-rad_net = GoodMoTimeNet()
+rad_net = GoodMoTimeNet(hidden_layer_size=350)
 loss_fc = nn.MSELoss()
 optimizer = optim.Adam(rad_net.parameters(), lr=1.0e-3)
 
-for i in range(2400):
+for i in range(1400):
     for seq, labels in radius_train_io_seq:
         optimizer.zero_grad()
         rad_net.hidden_cell = (torch.zeros(1, 1, rad_net.hidden_layer_size),
@@ -57,12 +59,12 @@ for i in range(2400):
         single_loss.backward()
         optimizer.step()
 
-    if i % 100 == 1:
+    if i % 100 == 0:
         print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
 
         print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
 
-# torch.save(rad_net, '../resources/time_interval_nets/rad_net.pt')
+torch.save(rad_net, '../resources/time_interval_nets/rad_net_alt.pt')
 
 fut_pred = 15
 
